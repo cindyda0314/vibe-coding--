@@ -16,9 +16,65 @@
     </nav>
   </header>
   <main id="app">
-    <section class="card">
-      <h2>학기·과목 관리</h2>
-      <p>준비 중입니다.</p>
+    <div id="status" class="notice notice-warn" role="status" aria-live="polite" hidden></div>
+
+    <section class="card" aria-labelledby="semester-title">
+      <h2 id="semester-title">학기</h2>
+      <div class="field">
+        <label for="semester-select">학기 선택</label>
+        <div class="row">
+          <select id="semester-select"></select>
+          <button type="button" id="semester-delete" class="btn-danger">학기 삭제</button>
+        </div>
+      </div>
+      <form id="semester-form" novalidate>
+        <div class="row field">
+          <div class="field-inline">
+            <label for="semester-year">연도</label>
+            <select id="semester-year"></select>
+          </div>
+          <div class="field-inline">
+            <label for="semester-term">학기</label>
+            <select id="semester-term"></select>
+          </div>
+          <button type="submit">추가</button>
+        </div>
+        <p class="field-error" id="semester-error"></p>
+      </form>
+    </section>
+
+    <section class="card" aria-labelledby="course-form-title">
+      <h2 id="course-form-title">과목 추가</h2>
+      <p id="course-form-hint" class="hint" hidden>학기를 먼저 추가하세요.</p>
+      <form id="course-form" novalidate>
+        <fieldset id="course-fieldset">
+          <div class="field">
+            <label for="course-name">과목명</label>
+            <input id="course-name" type="text" maxlength="50" autocomplete="off">
+            <p class="field-error" id="course-name-error"></p>
+          </div>
+          <div class="field">
+            <label for="course-credits">학점</label>
+            <input id="course-credits" type="text" inputmode="decimal" placeholder="예: 3" autocomplete="off">
+            <p class="field-error" id="course-credits-error"></p>
+          </div>
+          <div class="field">
+            <label for="course-enrollment">전체 수강 인원 (선택)</label>
+            <input id="course-enrollment" type="text" inputmode="numeric" placeholder="예: 60" autocomplete="off">
+            <p class="field-error" id="course-enrollment-error"></p>
+          </div>
+          <div class="row">
+            <button type="submit" id="course-submit">추가</button>
+            <button type="button" id="course-new" class="btn-secondary" hidden>새 과목</button>
+          </div>
+        </fieldset>
+      </form>
+    </section>
+
+    <section class="card" aria-labelledby="course-list-title">
+      <h2 id="course-list-title">과목 목록</h2>
+      <ul id="course-list" class="course-list"></ul>
+      <p id="goto-target" hidden><a href="target.html">선택한 과목의 성적 입력·필요 점수 계산으로 이동</a></p>
     </section>
   </main>
   <script src="js/storage.js"></script>
