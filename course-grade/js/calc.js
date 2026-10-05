@@ -13,7 +13,8 @@ const DEFAULT_CUTOFFS = {
   davinci: { A: 90, B: 80, C: 70, D: 60, F: 0 }, // TODO: 다빈치러닝 기준
 };
 
-// 상대평가 부여 비율: A는 상위 aMax%까지, B는 A와 합산해 상위 bMax%까지, 나머지는 C 이하.
+// 상대평가 부여 비율: 중앙대학교 학사운영규정 상대평가 기준.
+// A는 상위 aMax%까지, B는 A와 합산해 상위 bMax%까지, 나머지는 C 이하.
 const RATIO_RULES = {
   general: { aMax: 35, bMax: 70 },
   english: { aMax: 50, bMax: 90 },
@@ -156,13 +157,27 @@ function relativePosition(items, enrollment) {
   };
 }
 
-// TODO: 구간 경계는 임시값. 실제 학점 분포에 맞춰 조정.
-function interpretPosition(topPercent) {
-  if (topPercent <= 10) return 'very-high';
-  if (topPercent <= 30) return 'high';
-  if (topPercent <= 60) return 'middle';
-  if (topPercent <= 80) return 'low';
-  return 'very-low';
+// 경계값은 윗 등급에 포함한다 (상위 35.0%는 A).
+function gradeZone(topPercent, rule) {
+  if (topPercent <= rule.aMax + EPS) return 'A';
+  if (topPercent <= rule.bMax + EPS) return 'B';
+  return 'C';
+}
+
+// 가중 평균 위치의 권역과, 항목별 최선/최악 위치의 권역을 함께 돌려준다.
+// 두 권역이 다르면 항목 간 편차 때문에 판정이 갈리는 경우라 borderline으로 표시한다.
+function gradeOutlook(position, rule) {
+  if (position.status !== 'ok') return { status: 'insufficient', isEstimate: true };
+  const bestZone = gradeZone(position.percentRange.min, rule);
+  const worstZone = gradeZone(position.percentRange.max, rule);
+  return {
+    status: 'ok',
+    isEstimate: true,
+    zone: gradeZone(position.topPercent, rule),
+    bestZone: bestZone,
+    worstZone: worstZone,
+    borderline: bestZone !== worstZone,
+  };
 }
 
 gcRoot.GC.calc = {
@@ -182,7 +197,8 @@ gcRoot.GC.calc = {
   defaultCutoffs: defaultCutoffs,
   gradeRatioRule: gradeRatioRule,
   relativePosition: relativePosition,
-  interpretPosition: interpretPosition,
+  gradeZone: gradeZone,
+  gradeOutlook: gradeOutlook,
 };
 
 if (typeof module !== 'undefined') module.exports = gcRoot.GC.calc;

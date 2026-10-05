@@ -297,12 +297,69 @@ test('relativePosition: 항상 추정치 표시', function () {
   assert.strictEqual(calc.relativePosition(makeItems(), 60).isEstimate, true);
 });
 
-test('interpretPosition: 구간 코드', function () {
-  assert.strictEqual(calc.interpretPosition(5), 'very-high');
-  assert.strictEqual(calc.interpretPosition(20), 'high');
-  assert.strictEqual(calc.interpretPosition(50), 'middle');
-  assert.strictEqual(calc.interpretPosition(70), 'low');
-  assert.strictEqual(calc.interpretPosition(95), 'very-low');
+// ---------- 등급 권역 (A / B / C 이하) ----------
+const GENERAL = { aMax: 35, bMax: 70 };
+
+test('gradeZone: A / B / C 이하 권역', function () {
+  assert.strictEqual(calc.gradeZone(10, GENERAL), 'A');
+  assert.strictEqual(calc.gradeZone(50, GENERAL), 'B');
+  assert.strictEqual(calc.gradeZone(90, GENERAL), 'C');
+});
+
+test('gradeZone: 경계값은 윗 등급에 포함, 초과하면 아랫 등급', function () {
+  assert.strictEqual(calc.gradeZone(35, GENERAL), 'A');
+  assert.strictEqual(calc.gradeZone(35.0001, GENERAL), 'B');
+  assert.strictEqual(calc.gradeZone(70, GENERAL), 'B');
+  assert.strictEqual(calc.gradeZone(70.0001, GENERAL), 'C');
+});
+
+test('gradeZone: 부동소수점 오차는 경계로 취급', function () {
+  assert.strictEqual(calc.gradeZone(35 + 1e-12, GENERAL), 'A');
+});
+
+test('gradeZone: 기준별 비율 (영어 A 50 / B 90)', function () {
+  const rule = calc.gradeRatioRule('english');
+  assert.strictEqual(calc.gradeZone(45, rule), 'A');
+  assert.strictEqual(calc.gradeZone(85, rule), 'B');
+  assert.strictEqual(calc.gradeZone(91, rule), 'C');
+});
+
+test('gradeOutlook: 가중 평균이 속한 권역과 범위의 최선/최악 권역', function () {
+  // mid 6등 = 10%, assignment 30등 = 50% → 가중 26% (A), 범위 10~50% (A~B)
+  const pos = calc.relativePosition(makeItems({ mid: { rank: 6 }, assignment: { rank: 30 } }), 60);
+  const o = calc.gradeOutlook(pos, GENERAL);
+  assert.strictEqual(o.status, 'ok');
+  assert.strictEqual(o.zone, 'A');
+  assert.strictEqual(o.bestZone, 'A');
+  assert.strictEqual(o.worstZone, 'B');
+  assert.strictEqual(o.borderline, true);
+  assert.strictEqual(o.isEstimate, true);
+});
+
+test('gradeOutlook: 범위 전체가 한 권역이면 borderline 아님', function () {
+  const pos = calc.relativePosition(makeItems({ mid: { rank: 6 }, assignment: { rank: 12 } }), 60);
+  const o = calc.gradeOutlook(pos, GENERAL);
+  assert.strictEqual(o.zone, 'A');
+  assert.strictEqual(o.borderline, false);
+});
+
+test('gradeOutlook: 같은 순위도 성적 기준에 따라 권역이 달라짐', function () {
+  const pos = calc.relativePosition(makeItems({ mid: { rank: 24 } }), 60); // 상위 40%
+  assert.strictEqual(calc.gradeOutlook(pos, calc.gradeRatioRule('general')).zone, 'B');
+  assert.strictEqual(calc.gradeOutlook(pos, calc.gradeRatioRule('english')).zone, 'A');
+});
+
+test('gradeOutlook: 순위가 없으면 insufficient', function () {
+  const o = calc.gradeOutlook(calc.relativePosition(makeItems(), 60), GENERAL);
+  assert.strictEqual(o.status, 'insufficient');
+  assert.strictEqual(o.isEstimate, true);
+});
+
+test('gradeOutlook: 순위 미입력 항목은 권역 판정에 섞이지 않음', function () {
+  // 순위 입력은 mid(상위 10%)뿐. 미입력이 100%로 섞이면 C가 된다.
+  const o = calc.gradeOutlook(calc.relativePosition(makeItems({ mid: { rank: 6 } }), 60), GENERAL);
+  assert.strictEqual(o.zone, 'A');
+  assert.strictEqual(o.worstZone, 'A');
 });
 
 console.log(passed + ' passed, ' + failed + ' failed');

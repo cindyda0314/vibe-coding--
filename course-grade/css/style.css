@@ -12,6 +12,9 @@
   --ok-border: #1f8a3b;
   --bad-bg: #fde8e8;
   --bad-border: #c62828;
+  --zone-a: #d9e8ff;
+  --zone-b: #e3f6e8;
+  --zone-c: #eceff3;
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 16px;
@@ -34,6 +37,9 @@
     --ok-border: #4cc26a;
     --bad-bg: #3a1717;
     --bad-border: #ff7b7b;
+    --zone-a: #1c3358;
+    --zone-b: #12301a;
+    --zone-c: #2a303b;
   }
 }
 
@@ -184,6 +190,38 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 .summary { margin: 0; display: grid; gap: var(--space-3); grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
 .summary dt { color: var(--muted); font-size: 0.9rem; }
 .summary dd { margin: 0; font-size: 1.3rem; font-weight: 700; }
+
+/* ---- position.html ---- */
+.headline { margin: 0 0 var(--space-3); font-size: 1.25rem; font-weight: 700; overflow-wrap: anywhere; }
+
+/* 구간은 색뿐 아니라 이름·범위 텍스트와 경계선으로도 구분한다 */
+.zone-bar { position: relative; padding-bottom: 2rem; }
+.zone-track {
+  position: relative; display: flex; height: 4.5rem;
+  border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden;
+}
+.zone {
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+  min-width: 0; padding: 0 var(--space-1); text-align: center; font-size: 0.85rem;
+}
+.zone + .zone { border-left: 2px dashed var(--muted); }
+.zone-a { background: var(--zone-a); }
+.zone-b { background: var(--zone-b); }
+.zone-c { background: var(--zone-c); }
+.zone-name { font-weight: 700; }
+.zone-range { color: var(--muted); font-size: 0.8rem; }
+.zone-band {
+  position: absolute; top: 0; bottom: 0; background: var(--accent); opacity: 0.25;
+  min-width: 2px; pointer-events: none;
+}
+.zone-marker {
+  position: absolute; top: 0; bottom: 0; width: 4px; margin-left: -2px;
+  background: var(--accent); pointer-events: none;
+}
+.zone-marker-label {
+  position: absolute; top: calc(4.5rem + var(--space-1)); white-space: nowrap;
+  font-size: 0.85rem; font-weight: 700; color: var(--accent);
+}
 
 /* 좁은 화면: 표를 항목별 카드로 접어 가로 스크롤을 없앤다 */
 @media (max-width: 640px) {
