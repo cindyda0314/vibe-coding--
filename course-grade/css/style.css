@@ -168,3 +168,36 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .field-inline { flex: 1 1 120px; min-width: 0; }
 .row.field { align-items: flex-end; }
+
+/* ---- target.html ---- */
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap;
+}
+.items-table td { padding: var(--space-1); }
+.items-table input[type="text"] { min-width: 4.5rem; }
+.items-table input[aria-invalid="true"] {
+  border-color: var(--bad-border); border-width: 2px;
+}
+.converted { white-space: nowrap; }
+.weight-sum { font-weight: 700; margin: var(--space-3) 0 var(--space-2); }
+.summary { margin: 0; display: grid; gap: var(--space-3); grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+.summary dt { color: var(--muted); font-size: 0.9rem; }
+.summary dd { margin: 0; font-size: 1.3rem; font-weight: 700; }
+
+/* 좁은 화면: 표를 항목별 카드로 접어 가로 스크롤을 없앤다 */
+@media (max-width: 640px) {
+  .items-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .items-table, .items-table tbody, .items-table tr, .items-table td {
+    display: block; width: 100%;
+  }
+  .items-table tr {
+    border: 1px solid var(--border); border-radius: var(--radius);
+    margin-bottom: var(--space-2); padding: var(--space-1);
+  }
+  .items-table td {
+    display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); border-bottom: 0;
+  }
+  .items-table td::before { content: attr(data-label); color: var(--muted); font-size: 0.9rem; flex: 0 0 6.5rem; }
+  .items-table td input[type="text"] { flex: 1; }
+}

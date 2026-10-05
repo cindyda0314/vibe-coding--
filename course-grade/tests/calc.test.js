@@ -101,6 +101,20 @@ test('completionRate: 비기말 항목이 없으면 0', function () {
 });
 
 // ---------- 필요 최종 점수 ----------
+test('totalScore: 입력된 모든 항목(최종 포함)의 환산 합, 미입력은 제외', function () {
+  near(calc.totalScore(makeItems()), 52);
+  near(calc.totalScore(makeItems({ final: { score: 50 } })), 72);
+  near(calc.totalScore(makeItems({ mid: { score: null } })), 28);
+  near(calc.totalScore(makeItems({ mid: { score: 0 } })), 28);
+  assert.strictEqual(calc.totalScore([]), 0);
+});
+
+test('inputRate: 모든 항목 중 점수 입력 비율 (0점은 입력됨)', function () {
+  near(calc.inputRate(makeItems()), 3 / 4);
+  near(calc.inputRate(makeItems({ final: { score: 0 } })), 1);
+  assert.strictEqual(calc.inputRate([]), 0);
+});
+
 test('requiredFinalScore: 달성 가능 (현재 52, 목표 90 → 95점)', function () {
   const r = calc.requiredFinalScore(makeItems(), 90);
   assert.strictEqual(r.status, 'achievable');
@@ -196,6 +210,18 @@ test('defaultCutoffs: 기준별로 A~F 키를 가진 복사본 반환', function
 
 test('defaultCutoffs: 알 수 없는 기준은 general로 대체', function () {
   assert.deepStrictEqual(calc.defaultCutoffs('???'), calc.defaultCutoffs('general'));
+});
+
+test('gradeRatioRule: 기준별 상대평가 비율', function () {
+  assert.deepStrictEqual(calc.gradeRatioRule('general'), { aMax: 35, bMax: 70 });
+  assert.deepStrictEqual(calc.gradeRatioRule('english'), { aMax: 50, bMax: 90 });
+  assert.deepStrictEqual(calc.gradeRatioRule('davinci'), { aMax: 50, bMax: 90 });
+});
+
+test('gradeRatioRule: 알 수 없는 기준은 general, 반환값은 복사본', function () {
+  assert.deepStrictEqual(calc.gradeRatioRule('???'), { aMax: 35, bMax: 70 });
+  calc.gradeRatioRule('general').aMax = 1;
+  assert.strictEqual(calc.gradeRatioRule('general').aMax, 35);
 });
 
 test('requiredScoreTable: 학점별 결과 행', function () {

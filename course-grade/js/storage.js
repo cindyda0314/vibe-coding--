@@ -166,6 +166,20 @@ GC.storage = (function () {
     });
   }
 
+  // 성적 입력 페이지용. 허용된 키만 덮어쓴다 (id·이름·학점·인원은 건드리지 않음).
+  const GRADE_KEYS = ['items', 'cutoffs', 'target', 'gradingBasis'];
+
+  function updateCourseGrades(courseId, patch) {
+    return mutate(function (state) {
+      const found = findCourse(state, courseId);
+      if (!found) return null;
+      GRADE_KEYS.forEach(function (key) {
+        if (key in patch) found.course[key] = patch[key];
+      });
+      return found.course;
+    });
+  }
+
   function deleteCourse(courseId) {
     mutate(function (state) {
       const found = findCourse(state, courseId);
@@ -204,6 +218,7 @@ GC.storage = (function () {
     deleteSemester: deleteSemester,
     addCourse: addCourse,
     updateCourseMeta: updateCourseMeta,
+    updateCourseGrades: updateCourseGrades,
     deleteCourse: deleteCourse,
     setCurrent: setCurrent,
     getCurrentCourse: getCurrentCourse,

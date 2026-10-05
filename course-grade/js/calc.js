@@ -13,6 +13,13 @@ const DEFAULT_CUTOFFS = {
   davinci: { A: 90, B: 80, C: 70, D: 60, F: 0 }, // TODO: 다빈치러닝 기준
 };
 
+// 상대평가 부여 비율: A는 상위 aMax%까지, B는 A와 합산해 상위 bMax%까지, 나머지는 C 이하.
+const RATIO_RULES = {
+  general: { aMax: 35, bMax: 70 },
+  english: { aMax: 50, bMax: 90 },
+  davinci: { aMax: 50, bMax: 90 },
+};
+
 // null(미입력)과 0(0점)을 구분하기 위한 판정
 function isEntered(v) {
   return typeof v === 'number' && Number.isFinite(v);
@@ -54,6 +61,20 @@ function completionRate(items) {
   return (targets.length - missingItems(items).length) / targets.length;
 }
 
+// 성적 입력 페이지용: 최종 항목을 구분하지 않고 입력된 모든 항목을 센다
+function totalScore(items) {
+  return items.reduce(function (sum, it) {
+    const c = convertedScore(it);
+    return c === null ? sum : sum + c;
+  }, 0);
+}
+
+function inputRate(items) {
+  if (items.length === 0) return 0;
+  const entered = items.filter(function (it) { return isEntered(it.score); }).length;
+  return entered / items.length;
+}
+
 // ---------- 필요 최종 점수 ----------
 function blocked(reason, extra) {
   return Object.assign({ status: 'blocked', reason: reason, needed: null, neededCeil: null, missing: [] }, extra);
@@ -86,6 +107,10 @@ function requiredScoreTable(items, cutoffs) {
 
 function defaultCutoffs(basis) {
   return Object.assign({}, DEFAULT_CUTOFFS[basis] || DEFAULT_CUTOFFS.general);
+}
+
+function gradeRatioRule(basis) {
+  return Object.assign({}, RATIO_RULES[basis] || RATIO_RULES.general);
 }
 
 // ---------- 상대 위치 (항상 추정치) ----------
@@ -148,11 +173,14 @@ gcRoot.GC.calc = {
   weightSum: weightSum,
   isWeightValid: isWeightValid,
   currentScore: currentScore,
+  totalScore: totalScore,
+  inputRate: inputRate,
   missingItems: missingItems,
   completionRate: completionRate,
   requiredFinalScore: requiredFinalScore,
   requiredScoreTable: requiredScoreTable,
   defaultCutoffs: defaultCutoffs,
+  gradeRatioRule: gradeRatioRule,
   relativePosition: relativePosition,
   interpretPosition: interpretPosition,
 };
