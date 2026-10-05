@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>성적 관리</title>
+<style>
+  :root {
+    --bg: #f4f3ff; --bg2: #fdf2f8; --card: #ffffff; --text: #1e1b3a; --muted: #6b6b8a;
+    --line: #e8e6f5; --soft: #f7f6ff;
+    --primary: #6366f1; --primary2: #8b5cf6; --pink: #ec4899; --amber: #f59e0b; --sky: #0ea5e9; --ok: #10b981; --danger: #ef4444;
+    --shadow: 0 1px 2px rgba(60, 50, 140, .06), 0 8px 24px rgba(60, 50, 140, .08);
+    --radius: 18px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #12111f; --bg2: #1a1226; --card: #1c1b2e; --text: #ecebff; --muted: #a09fc0;
+      --line: #2e2c47; --soft: #23223a;
+      --primary: #818cf8; --primary2: #a78bfa; --pink: #f472b6; --amber: #fbbf24; --sky: #38bdf8; --ok: #34d399; --danger: #f87171;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px rgba(0, 0, 0, .35);
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; color: var(--text); min-height: 100vh;
+    background: linear-gradient(160deg, var(--bg) 0%, var(--bg2) 100%) fixed;
+    font-family: "Pretendard", system-ui, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  }
+  main { max-width: 980px; margin: 0 auto; padding: 24px 16px 72px; }
+
+  /* 히어로 */
+  header.hero {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary2) 55%, var(--pink) 130%);
+    color: #fff; border-radius: 24px; padding: 26px 26px 22px; margin-bottom: 20px;
+    box-shadow: 0 12px 32px rgba(99, 102, 241, .35); position: relative; overflow: hidden;
+  }
+  header.hero::before, header.hero::after {
+    content: ""; position: absolute; border-radius: 50%; background: rgba(255, 255, 255, .12);
+  }
+  header.hero::before { width: 220px; height: 220px; right: -60px; top: -90px; }
+  header.hero::after { width: 140px; height: 140px; right: 120px; bottom: -80px; }
+  .hero > * { position: relative; z-index: 1; }
+  h1 { font-size: 26px; margin: 0; letter-spacing: -.5px; }
+  .hero p { margin: 4px 0 16px; opacity: .85; font-size: 14px; }
+  .hero .row { gap: 8px; }
+  .hero label { color: rgba(255, 255, 255, .85); font-size: 13px; display: flex; align-items: center; gap: 6px; }
+  .hero select { background: rgba(255, 255, 255, .18); border-color: rgba(255, 255, 255, .35); color: #fff; width: auto; }
+  .hero select option { color: #1e1b3a; }
+  .hero button { background: rgba(255, 255, 255, .18); border-color: rgba(255, 255, 255, .35); color: #fff; }
+  .hero button:hover { background: rgba(255, 255, 255, .3); border-color: #fff; }
+
+  h2 { font-size: 16px; margin: 0 0 14px; display: flex; align-items: center; gap: 8px; }
+  h2 .dot { width: 8px; height: 8px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--pink)); }
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 20px; margin-bottom: 18px; box-shadow: var(--shadow);
+  }
+
+  /* 요약 카드 */
+  .summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; margin-bottom: 18px; }
+  .stat {
+    background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 16px 14px;
+    box-shadow: var(--shadow); position: relative; overflow: hidden; transition: transform .15s;
+  }
+  .stat:hover { transform: translateY(-2px); }
+  .stat::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 4px; background: var(--accent); }
+  .stat .top { display: flex; justify-content: space-between; align-items: center; }
+  .stat .label { color: var(--muted); font-size: 13px; font-weight: 600; }
+  .stat .ico { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; font-size: 17px;
+    background: color-mix(in srgb, var(--accent) 16%, transparent); }
+  .stat .value { font-size: 32px; font-weight: 800; margin-top: 8px; letter-spacing: -1px; color: var(--accent); }
+  .stat .sub { color: var(--muted); font-size: 12px; margin-top: 2px; }
+  .bar { height: 6px; border-radius: 99px; background: var(--soft); margin-top: 10px; overflow: hidden; }
+  .bar > i { display: block; height: 100%; border-radius: 99px; background: var(--accent); transition: width .4s; }
+
+  /* 폼 요소 */
+  table { width: 100%; border-collapse: separate; border-spacing: 0 6px; }
+  th, td { text-align: left; padding: 2px 4px; font-size: 14px; }
+  th { color: var(--muted); font-weight: 600; font-size: 12px; padding-bottom: 2px; }
+  td.num, th.num { text-align: right; }
+  input, select, button { font: inherit; color: inherit; }
+  input[type=text], input[type=number], select {
+    background: var(--soft); border: 1.5px solid transparent; border-radius: 10px; padding: 8px 10px; width: 100%;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  input:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 22%, transparent); }
+  input[type=number] { width: 84px; }
+  input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--primary2); cursor: pointer; }
+  button {
+    background: var(--card); border: 1.5px solid var(--line); border-radius: 10px; padding: 8px 14px;
+    cursor: pointer; font-weight: 600; font-size: 13px; transition: all .15s;
+  }
+  button:hover { border-color: var(--primary); transform: translateY(-1px); }
+  button.primary {
+    background: linear-gradient(135deg, var(--primary), var(--primary2)); border: none; color: #fff;
+    padding: 12px 22px; font-size: 14px; border-radius: 12px; box-shadow: 0 6px 16px rgba(99, 102, 241, .35);
+  }
+  button.danger { color: var(--danger); }
+  button.danger:hover { border-color: var(--danger); }
+  button.ghost { border-style: dashed; color: var(--primary); background: transparent; }
+  button.icon { padding: 5px 9px; border-color: transparent; background: transparent; }
+  .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+
+  /* 성적 선택 색상 */
+  select[data-t="A"] { background: color-mix(in srgb, var(--ok) 18%, transparent); color: var(--ok); font-weight: 700; }
+  select[data-t="B"] { background: color-mix(in srgb, var(--sky) 18%, transparent); color: var(--sky); font-weight: 700; }
+  select[data-t="C"] { background: color-mix(in srgb, var(--amber) 20%, transparent); color: var(--amber); font-weight: 700; }
+  select[data-t="D"] { background: color-mix(in srgb, var(--pink) 18%, transparent); color: var(--pink); font-weight: 700; }
+  select[data-t="F"] { background: color-mix(in srgb, var(--danger) 18%, transparent); color: var(--danger); font-weight: 700; }
+  select option { color: var(--text); background: var(--card); font-weight: 400; }
+
+  /* 학기 카드 */
+  .sem { border-left: 5px solid var(--accent, var(--primary)); }
+  .sem-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .sem-head input { font-weight: 700; font-size: 17px; max-width: 200px; background: transparent; padding-left: 4px; }
+  .sem-head input:hover { background: var(--soft); }
+  .pill { display: inline-flex; align-items: center; gap: 6px; background: var(--soft); border-radius: 99px; padding: 6px 12px; font-size: 13px; color: var(--muted); }
+  .pill b { color: var(--accent, var(--primary)); font-size: 16px; }
+  .scroll { overflow-x: auto; }
+  .muted { color: var(--muted); font-size: 13px; }
+  .empty { text-align: center; color: var(--muted); padding: 36px 0; }
+  .empty .big { font-size: 38px; }
+
+  /* 목표 계산기 */
+  .goal { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; }
+  .goal label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--muted); font-weight: 600; }
+  #result {
+    margin-top: 14px; padding: 12px 14px; border-radius: 12px; font-weight: 600; font-size: 14px;
+    background: color-mix(in srgb, var(--primary) 10%, transparent); line-height: 1.5;
+  }
+  #result b { color: var(--primary); font-size: 18px; }
+  #result.bad { background: color-mix(in srgb, var(--danger) 10%, transparent); color: var(--danger); }
+  svg text { fill: var(--muted); font-size: 11px; }
+  @media (max-width: 520px) { header.hero { padding: 20px 18px; } h1 { font-size: 22px; } }
+</style>
+</head>
+<body>
+<main>
+  <header class="hero">
+    <h1>🎓 나의 성적 관리</h1>
+    <p>학기별 성적을 기록하고, 졸업까지 필요한 평점을 한눈에 확인하세요.</p>
+    <div class="row">
+      <label class="muted">학점 체계
+        <select id="scale" style="width:auto"></select>
+      </label>
+      <button id="export">내보내기</button>
+      <button id="import">불러오기</button>
+      <input id="file" type="file" accept="application/json" hidden>
+    </div>
+  </header>
+
+  <section class="summary" id="summary"></section>
+
+  <section class="card">
+    <h2><span class="dot"></span>학기별 평점 추이</h2>
+    <div id="chart"></div>
+  </section>
+
+  <section class="card">
+    <h2><span class="dot"></span>목표 평점 계산기</h2>
+    <div class="goal">
+      <label>졸업 학점 <input type="number" id="gradCredits" min="1" step="1"></label>
+      <label>목표 평점 <input type="number" id="targetGpa" min="0" step="0.01"></label>
+    </div>
+    <div id="result"></div>
+  </section>
+
+  <div id="semesters"></div>
+  <button class="primary" id="addSem">+ 학기 추가</button>
+</main>
+
+<script>
+const SCALES = {
+  '4.5': { max: 4.5, grades: { 'A+': 4.5, 'A0': 4.0, 'B+': 3.5, 'B0': 3.0, 'C+': 2.5, 'C0': 2.0, 'D+': 1.5, 'D0': 1.0, 'F': 0 } },
+  '4.3': { max: 4.3, grades: { 'A+': 4.3, 'A0': 4.0, 'A-': 3.7, 'B+': 3.3, 'B0': 3.0, 'B-': 2.7, 'C+': 2.3, 'C0': 2.0, 'C-': 1.7, 'D+': 1.3, 'D0': 1.0, 'D-': 0.7, 'F': 0 } },
+};
+// 평점 계산에서 제외되는 특수 성적. P는 학점 취득, NP는 미취득.
+const SPECIAL = { '': '수강중', 'P': 'P (Pass)', 'NP': 'NP' };
+
+const KEY = 'grade-manager-v1';
+let state = load();
+
+function load() {
+  try {
+    const s = JSON.parse(localStorage.getItem(KEY));
+    if (s && Array.isArray(s.semesters)) return s;
+  } catch (e) {}
+  return { scale: '4.5', gradCredits: 130, targetGpa: 4.0, semesters: [] };
+}
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
+}
+const uid = () => Math.random().toString(36).slice(2, 9);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const scale = () => SCALES[state.scale];
+const f2 = n => n.toFixed(2);
+
+// 평점 반영 과목인지(성적이 현재 학점 체계에 있는지)
+const points = c => scale().grades[c.grade];
+const counts = c => points(c) !== undefined;
+// 취득 학점: F, NP, 수강중 제외
+const earned = c => c.grade === 'P' || (counts(c) && c.grade !== 'F');
+
+function gpa(courses) {
+  const g = courses.filter(counts);
+  const cr = g.reduce((a, c) => a + c.credits, 0);
+  if (!cr) return null;
+  return g.reduce((a, c) => a + c.credits * points(c), 0) / cr;
+}
+const allCourses = () => state.semesters.flatMap(s => s.courses);
+const sumCredits = cs => cs.reduce((a, c) => a + c.credits, 0);
+
+function renderSummary() {
+  const all = allCourses();
+  const total = gpa(all), major = gpa(all.filter(c => c.major));
+  const got = sumCredits(all.filter(earned));
+  const left = Math.max(0, state.gradCredits - got);
+  const pct = v => Math.min(100, Math.max(0, v)).toFixed(1);
+  const stat = (ico, label, value, sub, accent, progress) =>
+    `<div class="stat" style="--accent:${accent}"><div class="top"><span class="label">${label}</span><span class="ico">${ico}</span></div>
+      <div class="value">${value}</div><div class="sub">${sub}</div>
+      ${progress === null ? '' : `<div class="bar"><i style="width:${pct(progress)}%"></i></div>`}</div>`;
+  const max = scale().max;
+  document.getElementById('summary').innerHTML =
+    stat('⭐', '전체 평점', total === null ? '-' : f2(total), `/ ${max.toFixed(1)}`, 'var(--primary)', total === null ? 0 : total / max * 100) +
+    stat('📘', '전공 평점', major === null ? '-' : f2(major), `/ ${max.toFixed(1)}`, 'var(--pink)', major === null ? 0 : major / max * 100) +
+    stat('✅', '취득 학점', got, `졸업 ${state.gradCredits}학점 중`, 'var(--ok)', got / state.gradCredits * 100) +
+    stat('🏁', '남은 학점', left, left ? '조금만 더 힘내요!' : '졸업 요건 충족 🎉', 'var(--amber)', null);
+}
+
+function renderChart() {
+  const pts = state.semesters.map(s => ({ name: s.name, v: gpa(s.courses) })).filter(p => p.v !== null);
+  const el = document.getElementById('chart');
+  if (pts.length < 1) { el.innerHTML = '<div class="empty"><div class="big">📈</div>성적이 입력된 학기가 생기면 그래프가 표시됩니다.</div>'; return; }
+  const W = 600, H = 200, L = 34, R = 14, T = 14, B = 28, max = scale().max;
+  const x = i => pts.length === 1 ? (L + W - R) / 2 : L + (W - L - R) * i / (pts.length - 1);
+  const y = v => T + (H - T - B) * (1 - v / max);
+  const grid = [0, 1, 2, 3, 4].filter(t => t <= max).map(t =>
+    `<line x1="${L}" x2="${W - R}" y1="${y(t)}" y2="${y(t)}" stroke="var(--line)"/><text x="${L - 6}" y="${y(t) + 4}" text-anchor="end">${t}</text>`).join('');
+  const line = pts.map((p, i) => `${i ? 'L' : 'M'}${x(i)},${y(p.v)}`).join(' ');
+  const area = `${line} L${x(pts.length - 1)},${y(0)} L${x(0)},${y(0)} Z`;
+  const dots = pts.map((p, i) =>
+    `<circle cx="${x(i)}" cy="${y(p.v)}" r="6" fill="var(--card)" stroke="url(#lg)" stroke-width="3"/>
+     <text x="${x(i)}" y="${y(p.v) - 12}" text-anchor="middle" style="fill:var(--text);font-weight:700;font-size:12px">${f2(p.v)}</text>
+     <text x="${x(i)}" y="${H - 8}" text-anchor="middle">${esc(p.name)}</text>`).join('');
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="학기별 평점 추이">
+    <defs>
+      <linearGradient id="lg" x1="0" x2="1"><stop offset="0" stop-color="var(--primary)"/><stop offset="1" stop-color="var(--pink)"/></linearGradient>
+      <linearGradient id="ag" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="var(--primary)" stop-opacity=".28"/><stop offset="1" stop-color="var(--primary)" stop-opacity="0"/></linearGradient>
+    </defs>${grid}
+    ${pts.length > 1 ? `<path d="${area}" fill="url(#ag)"/>` : ''}
+    <path d="${line}" fill="none" stroke="url(#lg)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>${dots}</svg>`;
+}
+
+function renderTarget() {
+  document.getElementById('gradCredits').value = state.gradCredits;
+  document.getElementById('targetGpa').value = state.targetGpa;
+  const all = allCourses();
+  const g = all.filter(counts);
+  const gradedCr = sumCredits(g);
+  const pointSum = g.reduce((a, c) => a + c.credits * points(c), 0);
+  const remain = Math.max(0, state.gradCredits - sumCredits(all.filter(earned)));
+  const el = document.getElementById('result');
+  el.className = '';
+  if (!remain) { el.textContent = '졸업 학점을 이미 채웠습니다. 🎉'; return; }
+  const need = (state.targetGpa * (gradedCr + remain) - pointSum) / remain;
+  if (need > scale().max) {
+    el.className = 'bad';
+    el.textContent = `남은 ${remain}학점을 모두 만점(${scale().max.toFixed(1)})을 받아도 목표 ${state.targetGpa}에 도달할 수 없습니다.`;
+  } else {
+    el.innerHTML = `🎯 목표 ${state.targetGpa} 달성하려면 남은 ${remain}학점에서 평균 <b>${f2(Math.max(0, need))}</b> 이상 필요합니다.`;
+  }
+}
+
+function gradeOptions(sel) {
+  const opts = Object.keys(scale().grades).map(g => [g, g])
+    .concat(Object.entries(SPECIAL));
+  // 현재 체계에 없는 성적(체계 전환 시)도 선택값으로 보존
+  if (sel && !opts.some(([v]) => v === sel)) opts.unshift([sel, sel + ' (미반영)']);
+  return opts.map(([v, l]) => `<option value="${esc(v)}"${v === sel ? ' selected' : ''}>${esc(l)}</option>`).join('');
+}
+
+function renderSemesters() {
+  const el = document.getElementById('semesters');
+  if (!state.semesters.length) { el.innerHTML = '<div class="card empty"><div class="big">🌱</div>아직 학기가 없습니다. “학기 추가”를 눌러 시작하세요.</div>'; return; }
+  const ACCENTS = ['var(--primary)', 'var(--pink)', 'var(--sky)', 'var(--amber)', 'var(--ok)', 'var(--primary2)'];
+  el.innerHTML = state.semesters.map((s, i) => {
+    const sg = gpa(s.courses);
+    const rows = s.courses.map(c => `
+      <tr data-s="${s.id}" data-c="${c.id}">
+        <td><input type="text" data-f="name" value="${esc(c.name)}" placeholder="과목명"></td>
+        <td><input type="number" data-f="credits" value="${c.credits}" min="0" max="9" step="1"></td>
+        <td><select data-f="grade" data-t="${c.grade && counts(c) ? c.grade[0] : ''}">${gradeOptions(c.grade)}</select></td>
+        <td style="text-align:center"><input type="checkbox" data-f="major" ${c.major ? 'checked' : ''}></td>
+        <td class="num"><button class="icon danger" data-act="delCourse" title="삭제">✕</button></td>
+      </tr>`).join('');
+    return `
+    <section class="card sem" data-s="${s.id}" style="--accent:${ACCENTS[i % ACCENTS.length]}">
+      <div class="sem-head">
+        <input type="text" data-f="semName" value="${esc(s.name)}" aria-label="학기 이름">
+        <span class="pill">평점 <b>${sg === null ? '-' : f2(sg)}</b> · ${sumCredits(s.courses.filter(earned))}학점 취득</span>
+        <button class="danger" data-act="delSem">학기 삭제</button>
+      </div>
+      <div class="scroll"><table>
+        <thead><tr><th>과목명</th><th>학점</th><th>성적</th><th style="text-align:center">전공</th><th></th></tr></thead>
+        <tbody>${rows || '<tr><td colspan="5" class="muted">과목을 추가하세요.</td></tr>'}</tbody>
+      </table></div>
+      <div style="margin-top:10px"><button class="ghost" data-act="addCourse">+ 과목 추가</button></div>
+    </section>`;
+  }).join('');
+}
+
+function render() {
+  const sel = document.getElementById('scale');
+  sel.innerHTML = Object.keys(SCALES).map(k => `<option value="${k}"${k === state.scale ? ' selected' : ''}>${k}점 만점</option>`).join('');
+  renderSummary(); renderChart(); renderTarget(); renderSemesters();
+  save();
+}
+
+// ---- 이벤트 ----
+const findSem = id => state.semesters.find(s => s.id === id);
+
+document.getElementById('semesters').addEventListener('change', e => {
+  const f = e.target.dataset.f; if (!f) return;
+  const secEl = e.target.closest('section'); const s = findSem(secEl.dataset.s);
+  if (f === 'semName') { s.name = e.target.value.trim() || s.name; return render(); }
+  const c = s.courses.find(c => c.id === e.target.closest('tr').dataset.c);
+  if (f === 'name') c.name = e.target.value;
+  else if (f === 'credits') c.credits = Math.max(0, Math.round(+e.target.value || 0));
+  else if (f === 'grade') c.grade = e.target.value;
+  else if (f === 'major') c.major = e.target.checked;
+  render();
+});
+
+document.getElementById('semesters').addEventListener('click', e => {
+  const act = e.target.dataset.act; if (!act) return;
+  const s = findSem(e.target.closest('section').dataset.s);
+  if (act === 'addCourse') s.courses.push({ id: uid(), name: '', credits: 3, grade: '', major: false });
+  if (act === 'delCourse') s.courses = s.courses.filter(c => c.id !== e.target.closest('tr').dataset.c);
+  if (act === 'delSem') {
+    if (!confirm(`"${s.name}" 학기를 삭제할까요?`)) return;
+    state.semesters = state.semesters.filter(x => x !== s);
+  }
+  render();
+});
+
+document.getElementById('addSem').onclick = () => {
+  const n = state.semesters.length;
+  const name = `${1 + Math.floor(n / 2)}학년 ${n % 2 + 1}학기`;
+  state.semesters.push({ id: uid(), name, courses: [{ id: uid(), name: '', credits: 3, grade: '', major: false }] });
+  render();
+};
+
+document.getElementById('scale').onchange = e => { state.scale = e.target.value; render(); };
+document.getElementById('gradCredits').onchange = e => { state.gradCredits = Math.max(1, +e.target.value || 130); render(); };
+document.getElementById('targetGpa').onchange = e => { state.targetGpa = Math.max(0, +e.target.value || 0); render(); };
+
+document.getElementById('export').onclick = () => {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' }));
+  a.download = 'grades.json'; a.click(); URL.revokeObjectURL(a.href);
+};
+document.getElementById('import').onclick = () => document.getElementById('file').click();
+document.getElementById('file').onchange = async e => {
+  const file = e.target.files[0]; if (!file) return;
+  try {
+    const d = JSON.parse(await file.text());
+    if (!d || !Array.isArray(d.semesters) || !SCALES[d.scale]) throw 0;
+    if (!confirm('현재 데이터를 덮어씁니다. 계속할까요?')) return;
+    state = d; render();
+  } catch (_) { alert('올바른 성적 파일이 아닙니다.'); }
+  e.target.value = '';
+};
+
+render();
+</script>
+</body>
+</html>
