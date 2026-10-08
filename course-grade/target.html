@@ -8,19 +8,21 @@
 </head>
 <body data-page="target">
   <header class="site-header">
-    <h1>성적관리</h1>
-    <nav class="site-nav" aria-label="주요 메뉴">
-      <a href="index.html" data-page="index">입력</a>
-      <a href="target.html" data-page="target">필요 점수</a>
-      <a href="position.html" data-page="position">상대 위치</a>
-    </nav>
+    <div class="site-header-inner">
+      <h1 class="site-title"><a href="index.html" class="brand" aria-label="CAUG-VIEW 메인 화면으로 이동">CAUG<span class="brand-sub">-VIEW</span></a></h1>
+      <nav class="site-nav" aria-label="주요 메뉴">
+        <a href="index.html" data-page="index">과목 관리</a>
+        <a href="target.html" data-page="target">성적 입력</a>
+        <a href="position.html" data-page="position">상대 위치</a>
+      </nav>
+    </div>
   </header>
   <main id="app">
     <p id="status" class="notice notice-warn" role="status" hidden></p>
 
     <section id="empty" class="card" hidden>
       <h2>성적 입력</h2>
-      <p>선택된 과목이 없습니다. <a href="index.html">입력 페이지</a>에서 학기와 과목을 먼저 선택하세요.</p>
+      <p>선택된 과목이 없습니다. <a href="index.html">과목 관리 페이지</a>에서 학기와 과목을 먼저 선택하세요.</p>
     </section>
 
     <div id="content" hidden>

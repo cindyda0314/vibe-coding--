@@ -85,8 +85,17 @@
       '</div></li>';
   }
 
+  // 학점 미입력 과목은 합계에서 제외
+  function renderTotalCredits(sem) {
+    const total = sem ? sem.courses.reduce(function (sum, c) {
+      return sum + (c.credits != null ? c.credits : 0);
+    }, 0) : 0;
+    $('total-credits').textContent = '총 ' + total + '학점';
+  }
+
   function renderCourseList(state) {
     const sem = getCurrentSemester(state);
+    renderTotalCredits(sem);
     const list = $('course-list');
     if (!sem) {
       list.innerHTML = '<li class="hint">학기를 먼저 추가하세요.</li>';

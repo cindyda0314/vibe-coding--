@@ -33,7 +33,7 @@
     if (!calc.isEntered(course.enrollment) || !(course.enrollment > 0)) {
       return '전체 수강 인원이 입력되지 않았습니다. 입력 페이지에서 이 과목의 수강 인원을 입력하세요.';
     }
-    return '순위가 입력된 평가 항목이 없습니다. 필요 점수 페이지의 성적 입력 표에서 항목별 내 순위를 입력하세요.';
+    return '순위가 입력된 평가 항목이 없습니다. 성적 입력 페이지의 표에서 항목별 내 순위를 입력하세요.';
   }
 
   function headlineText(position, enrollment) {
@@ -97,7 +97,7 @@
   function renderRatioInfo(course, rule) {
     $('ratio-info').textContent = '중앙대학교 학사운영규정 상대평가 기준 (' +
       (BASIS_NAMES[course.gradingBasis] || BASIS_NAMES.general) + '): A는 상위 ' + rule.aMax +
-      '%까지, A·B 합산 상위 ' + rule.bMax + '%까지, 나머지는 C 이하. 성적 기준은 필요 점수 페이지에서 바꿀 수 있습니다.';
+      '%까지, A·B 합산 상위 ' + rule.bMax + '%까지, 나머지는 C 이하. 성적 기준은 성적 입력 페이지에서 바꿀 수 있습니다.';
   }
 
   // ---------- 항목별 표 ----------
@@ -127,7 +127,7 @@
     const valid = calc.isWeightValid(course.items);
     note.hidden = valid;
     if (!valid) note.textContent = '⚠ 반영 비율 합계가 100%가 아닙니다(현재 ' +
-      ui.formatNumber(calc.weightSum(course.items), 2) + '%). 추정은 입력된 비율 그대로 계산하므로 필요 점수 페이지에서 비율을 확인하세요.';
+      ui.formatNumber(calc.weightSum(course.items), 2) + '%). 추정은 입력된 비율 그대로 계산하므로 성적 입력 페이지에서 비율을 확인하세요.';
   }
 
   function render(course) {
