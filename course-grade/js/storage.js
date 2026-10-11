@@ -10,10 +10,10 @@ GC.storage = (function () {
 
   function createDefaultItems() {
     return [
-      { id: 'mid', name: '중간', weight: 30, max: 100, score: null, rank: null, isFinal: false },
-      { id: 'assignment', name: '과제', weight: 20, max: 100, score: null, rank: null, isFinal: false },
-      { id: 'attendance', name: '출석', weight: 10, max: 100, score: null, rank: null, isFinal: false },
-      { id: 'final', name: '기말', weight: 40, max: 100, score: null, rank: null, isFinal: true },
+      { id: 'mid', name: '중간', weight: 30, max: 100, score: null, rank: null },
+      { id: 'assignment', name: '과제', weight: 20, max: 100, score: null, rank: null },
+      { id: 'attendance', name: '출석', weight: 10, max: 100, score: null, rank: null },
+      { id: 'final', name: '기말', weight: 40, max: 100, score: null, rank: null },
     ];
   }
 
@@ -24,8 +24,6 @@ GC.storage = (function () {
       credits: null,
       enrollment: null,
       items: createDefaultItems(),
-      cutoffs: { A: 90, B: 80, C: 70, D: 60, F: 0 },
-      target: 'A',
       gradingBasis: 'general',
     };
   }
@@ -167,7 +165,7 @@ GC.storage = (function () {
   }
 
   // 성적 입력 페이지용. 허용된 키만 덮어쓴다 (id·이름·학점·인원은 건드리지 않음).
-  const GRADE_KEYS = ['items', 'cutoffs', 'target', 'gradingBasis'];
+  const GRADE_KEYS = ['items', 'gradingBasis'];
 
   function updateCourseGrades(courseId, patch) {
     return mutate(function (state) {

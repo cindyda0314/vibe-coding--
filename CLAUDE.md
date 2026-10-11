@@ -102,13 +102,11 @@ course-grade/
         {
           "id": "c_...", "name": "자료구조", "credits": 3, "enrollment": 60,
           "items": [
-            { "id": "mid", "name": "중간", "weight": 30, "max": 100, "score": null, "rank": null, "isFinal": false },
-            { "id": "assignment", "name": "과제", "weight": 20, "max": 100, "score": null, "rank": null, "isFinal": false },
-            { "id": "attendance", "name": "출석", "weight": 10, "max": 100, "score": null, "rank": null, "isFinal": false },
-            { "id": "final", "name": "기말", "weight": 40, "max": 100, "score": null, "rank": null, "isFinal": true }
+            { "id": "mid", "name": "중간", "weight": 30, "max": 100, "score": null, "rank": null },
+            { "id": "assignment", "name": "과제", "weight": 20, "max": 100, "score": null, "rank": null },
+            { "id": "attendance", "name": "출석", "weight": 10, "max": 100, "score": null, "rank": null },
+            { "id": "final", "name": "기말", "weight": 40, "max": 100, "score": null, "rank": null }
           ],
-          "cutoffs": { "A": 90, "B": 80, "C": 70, "D": 60, "F": 0 },
-          "target": "A",
           "gradingBasis": "general"
         }
       ]
@@ -119,7 +117,7 @@ course-grade/
 }
 ```
 - 미입력 점수·순위는 `null`, 0점은 `0`. 둘을 혼동하지 않는다.
-- `cutoffs`, `target`, `isFinal`은 스키마에 남아 있으나 현재 화면에서는 사용하지 않는다. 데이터 호환을 위해 지우지 않는다.
+- 예전 기획의 `cutoffs`, `target`, `isFinal` 필드는 스키마에서 제거했다. 이미 저장된 데이터에 남아 있어도 읽지 않으며 오류도 나지 않는다.
 - 최초 실행 또는 저장 데이터가 깨졌을 때는 빈 상태(학기 없음)로 초기화하고, 새 과목은 기본 항목으로 생성한다.
 - `gradingBasis`는 `general` / `english` / `davinci`.
 
@@ -146,7 +144,6 @@ course-grade/
 
 - `node tests/calc.test.js` — 환산 점수, 상대 위치(가중 평균·미입력 제외·순위 범위), 등급 권역 경계를 검증한다.
 - 계산 로직을 변경하면 관련 테스트를 먼저 갱신한다.
-- `calc.js`에는 이전 기획의 최종 평가 계산 함수(`requiredFinalScore` 등)가 남아 있으나 어떤 화면에서도 호출하지 않는다. 새로 연결하려면 요청이 있어야 한다.
 - UI 변경 후에는 세 페이지를 모두 브라우저(`file://`)에서 열어 확인한다: 새로고침 후 데이터 유지, 반영 비율 합이 100%가 아닐 때 경고, 총 학점 배지 갱신, 순위 미입력·수강 인원 미입력 안내, 모바일 폭에서 가로 스크롤 없음.
 
 ## 하지 말 것

@@ -4,14 +4,6 @@ const gcRoot = typeof window !== 'undefined' ? window : globalThis;
 gcRoot.GC = gcRoot.GC || {};
 
 const EPS = 1e-9;
-const GRADES = ['A', 'B', 'C', 'D', 'F'];
-
-// TODO: 중앙대학교 공식 커트라인 확인 후 교체. 현재는 모두 예시값이다.
-const DEFAULT_CUTOFFS = {
-  general: { A: 90, B: 80, C: 70, D: 60, F: 0 },
-  english: { A: 90, B: 80, C: 70, D: 60, F: 0 }, // TODO: 영어 기준
-  davinci: { A: 90, B: 80, C: 70, D: 60, F: 0 }, // TODO: 다빈치러닝 기준
-};
 
 // 상대평가 부여 비율: 중앙대학교 학사운영규정 상대평가 기준.
 // A는 상위 aMax%까지, B는 A와 합산해 상위 bMax%까지, 나머지는 C 이하.
@@ -40,29 +32,6 @@ function isWeightValid(items) {
   return Math.abs(weightSum(items) - 100) < EPS;
 }
 
-function nonFinalItems(items) {
-  return items.filter(function (it) { return !it.isFinal; });
-}
-
-function currentScore(items) {
-  return nonFinalItems(items).reduce(function (sum, it) {
-    const c = convertedScore(it);
-    return c === null ? sum : sum + c;
-  }, 0);
-}
-
-function missingItems(items) {
-  return nonFinalItems(items).filter(function (it) { return !isEntered(it.score); });
-}
-
-// 최종 항목을 제외하고 센다 (필요 점수 계산의 선행 조건이므로)
-function completionRate(items) {
-  const targets = nonFinalItems(items);
-  if (targets.length === 0) return 0;
-  return (targets.length - missingItems(items).length) / targets.length;
-}
-
-// 성적 입력 페이지용: 최종 항목을 구분하지 않고 입력된 모든 항목을 센다
 function totalScore(items) {
   return items.reduce(function (sum, it) {
     const c = convertedScore(it);
@@ -74,40 +43,6 @@ function inputRate(items) {
   if (items.length === 0) return 0;
   const entered = items.filter(function (it) { return isEntered(it.score); }).length;
   return entered / items.length;
-}
-
-// ---------- 필요 최종 점수 ----------
-function blocked(reason, extra) {
-  return Object.assign({ status: 'blocked', reason: reason, needed: null, neededCeil: null, missing: [] }, extra);
-}
-
-function classifyNeeded(needed, finalMax) {
-  if (needed <= EPS) return { status: 'achieved', needed: needed, neededCeil: null };
-  if (needed > finalMax + EPS) return { status: 'impossible', needed: needed, neededCeil: null };
-  // 올림 전에 EPS를 빼서 70.00000000000001 같은 값이 71이 되지 않게 한다
-  return { status: 'achievable', needed: needed, neededCeil: Math.ceil(needed - EPS) };
-}
-
-function requiredFinalScore(items, cutoff) {
-  if (!isWeightValid(items)) return blocked('weight');
-  const fin = items.find(function (it) { return it.isFinal; });
-  if (!fin || !(fin.weight > 0) || !(fin.max > 0)) return blocked('no-final');
-  const missing = missingItems(items);
-  if (missing.length > 0) return blocked('missing', { missing: missing });
-
-  // 곱셈을 먼저 해서 나눗셈 오차를 줄인다
-  const needed = ((cutoff - currentScore(items)) * fin.max) / fin.weight;
-  return Object.assign({ reason: null, missing: [] }, classifyNeeded(needed, fin.max));
-}
-
-function requiredScoreTable(items, cutoffs) {
-  return GRADES.map(function (grade) {
-    return { grade: grade, cutoff: cutoffs[grade], result: requiredFinalScore(items, cutoffs[grade]) };
-  });
-}
-
-function defaultCutoffs(basis) {
-  return Object.assign({}, DEFAULT_CUTOFFS[basis] || DEFAULT_CUTOFFS.general);
 }
 
 function gradeRatioRule(basis) {
@@ -182,19 +117,12 @@ function gradeOutlook(position, rule) {
 
 gcRoot.GC.calc = {
   EPS: EPS,
-  GRADES: GRADES,
   isEntered: isEntered,
   convertedScore: convertedScore,
   weightSum: weightSum,
   isWeightValid: isWeightValid,
-  currentScore: currentScore,
   totalScore: totalScore,
   inputRate: inputRate,
-  missingItems: missingItems,
-  completionRate: completionRate,
-  requiredFinalScore: requiredFinalScore,
-  requiredScoreTable: requiredScoreTable,
-  defaultCutoffs: defaultCutoffs,
   gradeRatioRule: gradeRatioRule,
   relativePosition: relativePosition,
   gradeZone: gradeZone,

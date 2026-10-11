@@ -161,7 +161,7 @@
   }
 
   function addItem() {
-    const item = { id: storage.newId('i_'), name: '새 항목', weight: 0, max: 100, score: null, rank: null, isFinal: false };
+    const item = { id: storage.newId('i_'), name: '새 항목', weight: 0, max: 100, score: null, rank: null };
     course.items.push(item);
     persist({ items: course.items });
     setItemError('');
